@@ -1,0 +1,36 @@
+[project]
+name = "compmathlab3"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "lavrentious",email = "lavrent0@yandex.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "mypy (>=1.15.0,<2.0.0)",
+    "numpy (>=2.2.3,<3.0.0)",
+    "pyqt6 (>=6.8.1,<7.0.0)",
+    "matplotlib (>=3.10.1,<4.0.0)",
+    "sympy (>=1.13.3,<2.0.0)",
+    "scipy (>=1.15.2,<2.0.0)",
+    "mpmath (>=1.3.0,<2.0.0)"
+]
+packages = [{include = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+isort = "^6.0.1"
+autoflake = "^2.3.1"
+mypy = "^1.15.0"
+black = "^25.1.0"
+
+[tool.mypy]
+mypy_path = "src"
+explicit_package_bases = true
+strict = true
+disallow_untyped_calls = false

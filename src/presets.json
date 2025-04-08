@@ -1,0 +1,19 @@
+[
+    {
+        "name": "dmitriq pidor",
+        "f_expr": "x**2",
+        "interval_l": -5,
+        "interval_r": 5
+    },
+    {
+        "name": "furiq pidor",
+        "f_expr": "x^3-x+4",
+        "interval_l": -5,
+        "interval_r": 5
+    },
+    {
+        "f_expr": "0.5*x^4",
+        "interval_l": -1,
+        "interval_r": 2
+    }
+]
