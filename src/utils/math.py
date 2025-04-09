@@ -1,7 +1,8 @@
 from typing import Callable
 
 import sympy as sp  # type: ignore
-
+import math
+import re
 from config import DERIVATIVE_PRECISION
 from logger import GlobalLogger
 from utils.validation import to_sp_float
@@ -97,3 +98,35 @@ def normalize_f_str(f_str: str) -> str:
     f_str = f_str.replace("^", "**")
     f_str = f_str.replace(",", ".")
     return f_str
+
+
+def f_str_expr_to_sp_lambda(f_str: str) -> sp.Lambda:
+    f_str = f_str.replace(",", ".").replace("^", "**")
+    allowed_functions = (
+        "("
+        + "|".join(
+            filter(
+                lambda s: not s.startswith("_")
+                and not s.endswith("_")
+                and s not in {"inf", "nan"},
+                math.__dict__.keys(),
+            )
+        )
+        + ")"
+    )
+    allowed_pattern = r"^[0-9+\-*/().^ \s" + allowed_functions + "]+$"
+    if not re.match(allowed_pattern, f_str):
+        raise ValueError("Invalid characters in the equation")
+    x = sp.symbols("x")
+    try:
+        expr = sp.sympify(f_str)
+    except sp.SympifyError:
+        raise ValueError("Invalid equation format")
+    used_symbols = expr.free_symbols
+    if len(used_symbols) > 1:
+        raise ValueError(
+            f"Invalid variable(s) {used_symbols - {x}} in the equation. Only 'x' is allowed."
+        )
+    logger.debug("parsed expression", expr)
+    func = sp.Lambda(x, expr)
+    return func

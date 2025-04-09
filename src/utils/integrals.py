@@ -1,9 +1,13 @@
 import sympy as sp  # type: ignore
-
+import math
 from config import PRECISION
-from utils.math import Number, normalize_f_str
+from logger import GlobalLogger
+from utils.math import Number, f_str_expr_to_sp_lambda
 from utils.reader import Preset
 from utils.validation import to_sp_float
+import re
+
+logger = GlobalLogger()
 
 
 class FunctionExpr:
@@ -22,13 +26,9 @@ class FunctionExpr:
         if f is not None:
             self.f = f
         elif f_str is not None:
-            self.f = self._parse_f(f_str)
+            self.f = f_str_expr_to_sp_lambda(f_str)
         else:
             raise ValueError("f or f_str must be provided")
-
-    def _parse_f(self, f_str: str) -> sp.Lambda:
-        x = sp.symbols("x")
-        return sp.Lambda(x, sp.sympify(normalize_f_str(f_str)))
 
     def f_str(self) -> str:
         return str(self.f)
@@ -75,6 +75,9 @@ class IntegralExpr:
             self.interval_l = interval_l
             self.interval_r = interval_r
             self.fn = FunctionExpr(f=f, f_str=f_str)
+        
+        if self.interval_l > self.interval_r:
+            raise ValueError("interval left bound must be less than right bound")
 
     def __str__(self) -> str:
         fn, interval_l, interval_r = (

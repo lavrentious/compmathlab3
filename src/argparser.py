@@ -9,7 +9,9 @@ import sympy as sp  # type: ignore
 
 from logger import GlobalLogger, LogLevel
 from solvers.rect_solver import RectStrategy
+from utils.math import f_str_expr_to_sp_lambda
 from utils.reader import Preset, Reader
+from utils.validation import to_sp_float
 
 logger = GlobalLogger()
 
@@ -61,13 +63,13 @@ class ArgParser:
         self.parser.add_argument(
             "--interval-l",
             action="store",
-            type=sp.Float,
+            type=str,
             help="specify interval left bound",
         )
         self.parser.add_argument(
             "--interval-r",
             action="store",
-            type=sp.Float,
+            type=str,
             help="specify interval right bound",
         )
         self.parser.add_argument(
@@ -136,9 +138,7 @@ class ArgParser:
 
         return 0
 
-    def _validate_manual(
-        self, f_expr: str, interval_l: float, interval_r: float
-    ) -> Preset:
+    def _validate_manual(self, f_expr: str, interval_l: str, interval_r: str) -> Preset:
         logger.debug(
             f'validating manual preset "{f_expr}" [{interval_l} ; {interval_r}]'
         )
@@ -148,7 +148,20 @@ class ArgParser:
             raise ValueError("interval left bound is required")
         if not interval_r:
             raise ValueError("interval right bound is required")
-        return Preset(None, f_expr, interval_l, interval_r)
+
+        try:
+            f_str_expr_to_sp_lambda(f_expr)
+        except ValueError as e:
+            raise ValueError(f"invalid function expression: {e}")
+        try:
+            a = to_sp_float(interval_l)
+            b = to_sp_float(interval_r)
+        except ValueError as e:
+            raise ValueError(f"invalid interval bounds: {e}")
+        if a > b:
+            raise ValueError("interval left bound must be less than right bound")
+
+        return Preset(None, f_expr, a, b)
 
     def print_help(self) -> None:
         self.parser.print_help()
