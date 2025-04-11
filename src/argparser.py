@@ -111,57 +111,99 @@ class ArgParser:
             self.print_presets()
             exit(0)
 
-        if self.args.preset:
-            try:
-                self.preset = self.find_preset(self.args.preset)
-            except ValueError as e:
-                logger.error(e)
-                self.print_presets()
-                exit(1)
-            logger.debug(f"preset selected with --preset: {self.preset}")
-        elif self.args.input_file is not None:
+        if self.args.input_file is not None:
             self.in_stream = self.args.input_file
-
-        if not self.preset:
-            if self.args.input_file:
-                logger.debug(f'loading preset from "{self.in_stream.name}"')
-                reader = Reader(self.in_stream)
-                self.preset = reader.parse_preset()
-            else:
-                logger.debug(f"loading manually from args")
-                self.preset = self._validate_manual(
-                    self.args.f_expr, self.args.interval_l, self.args.interval_r
-                )
+        self.preset = self._get_preset()
+        print("using preset:", self.preset)
 
         self.method = SolutionMethod(self.args.method)
         self.rect_strategy = RectStrategy(self.args.rect_strategy)
 
         return 0
 
-    def _validate_manual(self, f_expr: str, interval_l: str, interval_r: str) -> Preset:
-        logger.debug(
-            f'validating manual preset "{f_expr}" [{interval_l} ; {interval_r}]'
-        )
-        if not f_expr:
-            raise ValueError("function expression is required")
-        if not interval_l:
-            raise ValueError("interval left bound is required")
-        if not interval_r:
-            raise ValueError("interval right bound is required")
+    def _get_preset(self) -> Preset:
+        preset: Preset | None = None
+        f_expr_str: str | None = self.args.f_expr
+        interval_l_str: str | None = self.args.interval_l
+        interval_r_str: str | None = self.args.interval_r
 
+        f_expr: str | None = None
+        interval_l: sp.Float | None = None
+        interval_r: sp.Float | None = None
+
+        if self.args.preset:
+            try:
+                res = self.find_preset(self.args.preset)
+                preset = Preset(
+                    name=res.name,
+                    f_expr=res.f_expr,
+                    interval_l=res.interval_l,
+                    interval_r=res.interval_r,
+                )
+            except ValueError as e:
+                logger.error(e)
+                self.print_presets()
+                exit(1)
+            logger.debug(f"preset selected with --preset: {preset}")
+        elif self.args.input_file is not None:
+            self.in_stream = self.args.input_file
+
+        if not self.preset and self.args.input_file:
+            logger.debug(f'loading preset from "{self.in_stream.name}"')
+            reader = Reader(self.in_stream)
+            preset = reader.parse_preset()
+        if f_expr_str is not None:
+            f_expr = self._validate_f_expr(f_expr_str)
+        if interval_l_str is not None:
+            interval_l = self._validate_interval_bound(interval_l_str, "left")
+        if interval_r_str is not None:
+            interval_r = self._validate_interval_bound(interval_r_str, "right")
+        if preset is None:
+            logger.debug(f"loading preset from cmd line args")
+            if f_expr is None:
+                raise ValueError("function expression is required (--f-expr <expr>)")
+            if interval_l is None:
+                raise ValueError(
+                    "interval left bound is required (--interval-l <float>)"
+                )
+            if interval_r is None:
+                raise ValueError(
+                    "interval right bound is required (--interval-r <float>)"
+                )
+            if interval_l > interval_r:
+                raise ValueError("left bound must be less than right bound")
+            preset = Preset(None, f_expr, interval_l, interval_r)
+        else:
+            if f_expr is not None:
+                logger.warning(
+                    f"preset's f_expr={preset.f_expr} is overriden by --f-expr={f_expr}"
+                )
+                preset.f_expr = f_expr
+            if interval_l is not None:
+                logger.warning(
+                    f"preset's interval_l={preset.interval_l} is overriden by --interval-l={interval_l}"
+                )
+                preset.interval_l = interval_l
+            if interval_r is not None:
+                logger.warning(
+                    f"preset's interval_r={preset.interval_r} is overriden by --interval-r={interval_r}"
+                )
+                preset.interval_r = interval_r
+
+        return preset
+
+    def _validate_f_expr(self, f_expr: str) -> str:
         try:
             f_str_expr_to_sp_lambda(f_expr)
         except ValueError as e:
             raise ValueError(f"invalid function expression: {e}")
-        try:
-            a = to_sp_float(interval_l)
-            b = to_sp_float(interval_r)
-        except ValueError as e:
-            raise ValueError(f"invalid interval bounds: {e}")
-        if a > b:
-            raise ValueError("interval left bound must be less than right bound")
+        return f_expr
 
-        return Preset(None, f_expr, a, b)
+    def _validate_interval_bound(self, bound: str, name: str) -> sp.Float:
+        try:
+            return to_sp_float(bound)
+        except ValueError as e:
+            raise ValueError(f"invalid {name} bound: {e}")
 
     def print_help(self) -> None:
         self.parser.print_help()

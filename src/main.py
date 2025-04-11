@@ -47,7 +47,11 @@ def run() -> None:
     GlobalLogger().set_min_level(LogLevel.DEBUG if parser.verbose else LogLevel.INFO)
     GlobalLogger().debug("Verbose mode:", parser.verbose)
 
-    integral = IntegralExpr(preset=parser.preset)
+    try:
+        integral = IntegralExpr(preset=parser.preset)
+    except Exception as e:
+        logger.error(e)
+        exit(1)
     logger.debug("solving integral", integral)
 
     solver = _get_solver(parser)
