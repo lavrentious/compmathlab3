@@ -15,5 +15,35 @@
         "f_expr": "0.5*x^4",
         "interval_l": -1,
         "interval_r": 2
+    },
+    {
+        "name": "improper_a_inf",
+        "f_expr": "log(x)",
+        "interval_l": 0,
+        "interval_r": 1
+    },
+    {
+        "name": "improper_b_inf",
+        "f_expr": "log(-x)",
+        "interval_l": 0,
+        "interval_r": 1
+    },
+    {
+        "name": "improper_x_inf",
+        "f_expr": "log(x)",
+        "interval_l": 0,
+        "interval_r": 1
+    },
+    {
+        "name": "govno",
+        "f_expr": "1/x",
+        "interval_l": -1,
+        "interval_r": 1
+    },
+    {
+        "name": "dirka",
+        "f_expr": "(x^2-2*x)/(x-2)",
+        "interval_l": 0,
+        "interval_r": 4
     }
 ]

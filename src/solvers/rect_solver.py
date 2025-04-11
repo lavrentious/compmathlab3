@@ -2,9 +2,8 @@ import enum
 
 import sympy as sp  # type: ignore
 
-from config import EPS
 from logger import GlobalLogger
-from solvers.base_solver import BaseSolver, Solution
+from solvers.base_solver import BaseSolver
 from utils.integrals import IntegralExpr
 from utils.math import d2f, max_in_interval
 from utils.validation import to_sp_float
@@ -19,12 +18,14 @@ class RectStrategy(enum.Enum):
 
 
 class RectSolver(BaseSolver):
-    PRECISION_ORDER = 2  # k param
+    PRECISION_ORDER = 1  # k param
     strategy: RectStrategy = RectStrategy.LEFT
 
     def compute(self, integral_expr: IntegralExpr, interval_count: int) -> sp.Float:
         ans: sp.Float = to_sp_float(0)
-        h = self.get_h(integral_expr.interval_l, integral_expr.interval_r, interval_count)
+        h = self.get_h(
+            integral_expr.interval_l, integral_expr.interval_r, interval_count
+        )
         if self.strategy == RectStrategy.LEFT:
             x = integral_expr.interval_l
         elif self.strategy == RectStrategy.RIGHT:

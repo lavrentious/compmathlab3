@@ -1,8 +1,10 @@
 import sympy as sp  # type: ignore
 
-from config import EPS
+from config import EPS, INF_EPS, RUNGE_ERROR_THRESHOLD
+from logger import GlobalLogger
 from utils.integrals import IntegralExpr
-from utils.validation import to_sp_float
+
+logger = GlobalLogger()
 
 
 class Solution:
@@ -28,13 +30,15 @@ class Solution:
 
 
 class BaseSolver:
-    MAX_ITERATIONS = 100
+    MAX_ITERATIONS = 15
     PRECISION_ORDER = 2
 
     def __init__(self) -> None:
         pass
 
-    def get_h(self, interval_l: sp.Float, interval_r: sp.Float, interval_count: int) -> sp.Float:
+    def get_h(
+        self, interval_l: sp.Float, interval_r: sp.Float, interval_count: int
+    ) -> sp.Float:
         return (interval_r - interval_l) / interval_count
 
     def compute(self, integral_expr: IntegralExpr, interval_count: int) -> sp.Float:
@@ -50,18 +54,48 @@ class BaseSolver:
     ) -> Solution:
         """
         default implementation
-        uses Runge's method
+        - checks convergence and raises ValueError if not convergent
+        - uses Runge's method
         """
-        ans = to_sp_float(0)
-        for _ in range(self.MAX_ITERATIONS):
-            ans = self.compute(integral_expr, interval_count * 2)
-            if (abs(ans - self.compute(integral_expr, interval_count))) / (
-                2**self.PRECISION_ORDER - 1
-            ) < eps:
+        if not integral_expr.is_convergent():
+            # only checks that the interval is not infinite
+            raise ValueError(f"integral {integral_expr} does not converge")
+
+        if abs(integral_expr.fn.limit(integral_expr.interval_l, dir="+")) == sp.oo:
+            integral_expr = IntegralExpr(
+                interval_l=integral_expr.interval_l + INF_EPS,
+                interval_r=integral_expr.interval_r,
+                fn=integral_expr.fn,
+            )
+            logger.warning(
+                f"left limit is infinite; interval_l={integral_expr.interval_l}"
+            )
+        if abs(integral_expr.fn.limit(integral_expr.interval_r, dir="-")) == sp.oo:
+            integral_expr = IntegralExpr(
+                interval_l=integral_expr.interval_l,
+                interval_r=integral_expr.interval_r - INF_EPS,
+                fn=integral_expr.fn,
+            )
+            logger.warning(
+                f"right limit is infinite; interval_r={integral_expr.interval_r}"
+            )
+
+        prev = self.compute(integral_expr, interval_count)
+        for i in range(self.MAX_ITERATIONS):
+            interval_count *= 2
+            current = self.compute(integral_expr, interval_count)
+            error = abs(current - prev) / (2**self.PRECISION_ORDER - 1)
+            logger.debug(f"iteration {i+1}: value={current}, error={error}")
+            if error > RUNGE_ERROR_THRESHOLD:
+                logger.warning(
+                    f"error={error} > RUNGE_ERROR_THRESHOLD={RUNGE_ERROR_THRESHOLD}; assuming divergent "
+                )
+                break
+            if error < eps:
                 return Solution(
-                    self.compute(integral_expr, interval_count),
+                    current,
                     interval_count,
                     self.calculate_error(integral_expr, interval_count),
                 )
-            interval_count *= 2
-        raise ValueError("max iterations exceeded")
+            prev = current
+        raise ValueError("integral diverges")
