@@ -164,8 +164,7 @@ class IntegralExpr:
         if a is -sp.oo or b == sp.oo:
             return 1
 
-        self.fn.symbol
-        if len(self.fn._find_inf_singularities()):
+        if len(self.get_inf_singularities_in_interval()) > 0:
             return 2
         try:
             self.fn.limit(a, dir="+")
@@ -174,9 +173,7 @@ class IntegralExpr:
             logger.debug(e)
             return 2
 
-        # TODO: singularities
-
-        return 2
+        return None
 
     def is_convergent(self) -> bool:
         proper_order = self.is_improper()
@@ -190,23 +187,22 @@ class IntegralExpr:
             )
             return False
 
-        if (
-            proper_order == 2
-            and sum(
-                1
-                for x in self.fn.inf_singularities
-                if self.interval_l < x < self.interval_r
-            )
-            > 0
-        ):
+        if proper_order == 2:
             logger.debug(
-                f"improper of 2nd kind with inf singularities ({self.fn.inf_singularities}); assuming divergent"
+                f"improper of 2-nd order with inf singularities ({self.get_inf_singularities_in_interval()}); assuming divergent"
             )
             return False
         # TODO
         # for each singularity approximate with polynomial approximation and determine convergence
 
         return True
+
+    def get_inf_singularities_in_interval(self) -> Set[sp.Float]:
+        return {
+            x
+            for x in self.fn.inf_singularities
+            if self.interval_l < x < self.interval_r
+        }
 
     def __str__(self) -> str:
         fn, interval_l, interval_r = (
