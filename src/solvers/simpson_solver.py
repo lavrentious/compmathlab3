@@ -5,7 +5,6 @@ import sympy as sp  # type: ignore
 from logger import GlobalLogger
 from solvers.base_solver import BaseSolver
 from utils.integrals import IntegralExpr
-from utils.math import d4f, max_in_interval
 
 logger = GlobalLogger()
 
@@ -42,15 +41,3 @@ class SimpsonSolver(BaseSolver):
         yn = f(xn)
 
         return h / 3 * (y0 + 4 * sum(odd_ys) + 2 * sum(even_ys) + yn)
-
-    def calculate_error(
-        self, integral_expr: IntegralExpr, interval_count: int
-    ) -> sp.Float:
-        fn, a, b = (
-            integral_expr.fn.compute,
-            integral_expr.interval_l,
-            integral_expr.interval_r,
-        )
-        return max_in_interval(lambda x: abs(d4f(fn, x)), a, b) * (
-            ((b - a) ** 5) / (180 * interval_count**4)
-        )

@@ -45,11 +45,6 @@ class BaseSolver:
     def compute(self, integral_expr: IntegralExpr, interval_count: int) -> sp.Float:
         raise NotImplementedError
 
-    def calculate_error(
-        self, integral_expr: IntegralExpr, interval_count: int
-    ) -> sp.Float:
-        raise NotImplementedError
-
     def solve(
         self, integral_expr: IntegralExpr, interval_count: int, eps: sp.Float = EPS
     ) -> Solution:
@@ -103,7 +98,7 @@ class BaseSolver:
                 return Solution(
                     current,
                     interval_count,
-                    self.calculate_error(integral_expr, interval_count),
+                    error,
                 )
             prev = current
         raise ValueError("integral diverges")

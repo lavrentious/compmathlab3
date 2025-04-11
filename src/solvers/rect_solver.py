@@ -5,7 +5,6 @@ import sympy as sp  # type: ignore
 from logger import GlobalLogger
 from solvers.base_solver import BaseSolver
 from utils.integrals import IntegralExpr
-from utils.math import d2f, max_in_interval
 from utils.validation import to_sp_float
 
 logger = GlobalLogger()
@@ -37,18 +36,6 @@ class RectSolver(BaseSolver):
             y = integral_expr.fn.compute(x)
             ans += h * y
         return ans
-
-    def calculate_error(
-        self, integral_expr: IntegralExpr, interval_count: int
-    ) -> sp.Float:
-        fn, a, b = (
-            integral_expr.fn.compute,
-            integral_expr.interval_l,
-            integral_expr.interval_r,
-        )
-        return max_in_interval(lambda x: abs(d2f(fn, x)), a, b) * (
-            ((b - a) ** 3) / (24 * interval_count**2)
-        )
 
     def set_strategy(self, strategy: RectStrategy) -> None:
         self.strategy = strategy
