@@ -1,3 +1,4 @@
+import traceback
 from typing import List
 
 from argparser import ArgParser, SolutionMethod
@@ -7,6 +8,7 @@ from solvers.rect_solver import RectSolver
 from solvers.simpson_solver import SimpsonSolver
 from solvers.trap_solver import TrapSolver
 from utils.integrals import IntegralExpr
+from utils.meta import colorful_error_trace
 from utils.reader import Preset, Reader
 
 
@@ -46,10 +48,15 @@ def run() -> None:
     GlobalLogger().debug("Verbose mode:", parser.verbose)
 
     integral = IntegralExpr(preset=parser.preset)
-    logger.debug("using integral", integral)
+    logger.debug("solving integral", integral)
 
     solver = _get_solver(parser)
-    ans = solver.solve(integral, 4)
+    try:
+        ans = solver.solve(integral, 4)
+    except Exception as e:
+        logger.error(e)
+        logger.debug(colorful_error_trace(e))
+        exit(1)
 
     print("================")
     print("result:", ans.value)

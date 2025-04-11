@@ -1,4 +1,8 @@
+import traceback
 from typing import Any
+from pygments import highlight
+from pygments.lexers import Python3TracebackLexer
+from pygments.formatters import TerminalTrueColorFormatter
 
 
 def singleton(class_: Any) -> Any:
@@ -10,3 +14,12 @@ def singleton(class_: Any) -> Any:
         return instances[class_]
 
     return getinstance
+
+
+def colorful_error_trace(e: Exception) -> str:
+    return "".join(
+        [
+            highlight(line, Python3TracebackLexer(), TerminalTrueColorFormatter())
+            for line in traceback.format_tb(e.__traceback__)
+        ]
+    )
