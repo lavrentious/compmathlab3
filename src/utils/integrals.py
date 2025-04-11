@@ -77,6 +77,8 @@ class FunctionExpr:
     def continuous(self, l: Number, r: Number) -> bool:
         x = l
         d = (r - l) / SAMPLES_COUNT
+        if d == 0:
+            return True
         if d == sp.oo:
             return True
         while x <= r:

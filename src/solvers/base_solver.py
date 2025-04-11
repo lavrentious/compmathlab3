@@ -3,6 +3,7 @@ import sympy as sp  # type: ignore
 from config import EPS, INF_EPS, RUNGE_ERROR_THRESHOLD
 from logger import GlobalLogger
 from utils.integrals import IntegralExpr
+from utils.validation import to_sp_float
 
 logger = GlobalLogger()
 
@@ -60,6 +61,13 @@ class BaseSolver:
         if not integral_expr.is_convergent():
             # only checks that the interval is not infinite
             raise ValueError(f"integral {integral_expr} does not converge")
+
+        if integral_expr.interval_l == integral_expr.interval_r:
+            return Solution(
+                value=to_sp_float(0),
+                interval_count=0,
+                error_rate=to_sp_float(0),
+            )
 
         if abs(integral_expr.fn.limit(integral_expr.interval_l, dir="+")) == sp.oo:
             integral_expr = IntegralExpr(
