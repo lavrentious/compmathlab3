@@ -7,6 +7,7 @@ from typing import Any, List
 
 import sympy as sp  # type: ignore
 
+from config import MAX_STARTING_SUBDIVISIONS
 from logger import GlobalLogger, LogLevel
 from solvers.rect_solver import RectStrategy
 from utils.math import f_str_expr_to_sp_lambda
@@ -33,6 +34,7 @@ class ArgParser:
     preset: Preset | None = None
     method: SolutionMethod
     rect_strategy: RectStrategy
+    subdivisions: int
 
     # args
     verbose: bool = False
@@ -87,6 +89,14 @@ class ArgParser:
             help="specify strategy for rect method",
         )
         self.parser.add_argument(
+            "-n",
+            "--subdivisions",
+            action="store",
+            type=int,
+            default=4,
+            help="starting number of subdivisions",
+        )
+        self.parser.add_argument(
             "input_file",
             nargs="?",
             help="file to read from (preset format)",
@@ -118,6 +128,14 @@ class ArgParser:
 
         self.method = SolutionMethod(self.args.method)
         self.rect_strategy = RectStrategy(self.args.rect_strategy)
+
+        self.subdivisions = self.args.subdivisions
+        if self.subdivisions <= 0:
+            logger.error("subdivisions must be greater than 0")
+            exit(1)
+        if self.subdivisions > MAX_STARTING_SUBDIVISIONS:
+            logger.error(f"subdivisions must be less than {MAX_STARTING_SUBDIVISIONS}")
+            exit(1)
 
         return 0
 

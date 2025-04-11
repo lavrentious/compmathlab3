@@ -54,7 +54,7 @@ def run() -> None:
 
     solver = _get_solver(parser)
     try:
-        ans = solver.solve(integral, 4)
+        ans = solver.solve(integral, parser.subdivisions)
     except Exception as e:
         logger.error(e)
         logger.debug(colorful_error_trace(e))
