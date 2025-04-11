@@ -1,14 +1,11 @@
-import enum
 from typing import List
 
 import sympy as sp  # type: ignore
 
-from config import EPS
 from logger import GlobalLogger
-from solvers.base_solver import BaseSolver, Solution
+from solvers.base_solver import BaseSolver
 from utils.integrals import IntegralExpr
-from utils.math import d2f, d4f, max_in_interval
-from utils.validation import to_sp_float
+from utils.math import d4f, max_in_interval
 
 logger = GlobalLogger()
 

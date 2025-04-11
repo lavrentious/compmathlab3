@@ -1,10 +1,7 @@
-import enum
-
 import sympy as sp  # type: ignore
 
-from config import EPS
 from logger import GlobalLogger
-from solvers.base_solver import BaseSolver, Solution
+from solvers.base_solver import BaseSolver
 from utils.integrals import IntegralExpr
 from utils.math import d2f, max_in_interval
 from utils.validation import to_sp_float
@@ -17,7 +14,9 @@ class TrapSolver(BaseSolver):
 
     def compute(self, integral_expr: IntegralExpr, interval_count: int) -> sp.Float:
         ans: sp.Float = to_sp_float(0)
-        h = self.get_h(integral_expr.interval_l, integral_expr.interval_r, interval_count)
+        h = self.get_h(
+            integral_expr.interval_l, integral_expr.interval_r, interval_count
+        )
         f, interval_l = integral_expr.fn.compute, integral_expr.interval_l
         for i in range(interval_count):
             a, b = interval_l + h * i, interval_l + h * (i + 1)

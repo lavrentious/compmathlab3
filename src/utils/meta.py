@@ -1,8 +1,9 @@
 import traceback
 from typing import Any
+
 from pygments import highlight
-from pygments.lexers import Python3TracebackLexer
 from pygments.formatters import TerminalTrueColorFormatter
+from pygments.lexers import Python3TracebackLexer
 
 
 def singleton(class_: Any) -> Any:

@@ -1,8 +1,9 @@
+import math
+import re
 from typing import Callable
 
 import sympy as sp  # type: ignore
-import math
-import re
+
 from config import DERIVATIVE_PRECISION
 from logger import GlobalLogger
 from utils.validation import to_sp_float

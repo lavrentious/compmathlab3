@@ -1,4 +1,3 @@
-import traceback
 from typing import List
 
 from argparser import ArgParser, SolutionMethod
@@ -10,7 +9,6 @@ from solvers.trap_solver import TrapSolver
 from utils.integrals import IntegralExpr
 from utils.meta import colorful_error_trace
 from utils.reader import Preset, Reader
-
 
 if __name__ != "__main__":
     exit(0)

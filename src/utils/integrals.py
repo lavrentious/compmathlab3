@@ -1,12 +1,12 @@
-from math import inf
-from typing import List, Literal, Set
+from typing import Literal, Set
+
 import sympy as sp  # type: ignore
-from config import EPS, PRECISION, SAMPLES_COUNT
+
+from config import PRECISION, SAMPLES_COUNT
 from logger import GlobalLogger
 from utils.math import Number, f_str_expr_to_sp_lambda
 from utils.reader import Preset
 from utils.validation import to_sp_float
-
 
 logger = GlobalLogger()
 
@@ -164,7 +164,7 @@ class IntegralExpr:
         if a is -sp.oo or b == sp.oo:
             return 1
 
-        x = self.fn.symbol
+        self.fn.symbol
         if len(self.fn._find_inf_singularities()):
             return 2
         try:
