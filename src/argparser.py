@@ -13,6 +13,7 @@ from solvers.rect_solver import RectStrategy
 from utils.math import f_str_expr_to_sp_lambda
 from utils.reader import Preset, Reader
 from utils.validation import to_sp_float
+from utils.writer import OutputFormat
 
 logger = GlobalLogger()
 
@@ -26,7 +27,7 @@ class SolutionMethod(enum.Enum):
 class ArgParser:
     parser: argparse.ArgumentParser
     in_stream: TextIOWrapper | Any = sys.stdin
-    out_stream: None | TextIOWrapper | Any = sys.stdout
+    out_stream: None | TextIOWrapper | Any = None
     args: Namespace
 
     presets: List[Preset]
@@ -35,6 +36,7 @@ class ArgParser:
     method: SolutionMethod
     rect_strategy: RectStrategy
     subdivisions: int
+    output_format: OutputFormat
 
     # args
     verbose: bool = False
@@ -97,6 +99,20 @@ class ArgParser:
             help="starting number of subdivisions",
         )
         self.parser.add_argument(
+            "-o",
+            "--output-file",
+            action="store",
+            help="file to write to (default format=plain)",
+            type=argparse.FileType("w"),
+        )
+        self.parser.add_argument(
+            "-f",
+            "--format",
+            help="specify output format",
+            choices=[e.value for e in OutputFormat],
+            default=OutputFormat.PLAIN.value,
+        )
+        self.parser.add_argument(
             "input_file",
             nargs="?",
             help="file to read from (preset format)",
@@ -148,6 +164,10 @@ class ArgParser:
         f_expr: str | None = None
         interval_l: sp.Float | None = None
         interval_r: sp.Float | None = None
+
+        if self.args.output_file is not None:
+            self.out_stream = self.args.output_file
+        self.output_format = OutputFormat(self.args.format)
 
         if self.args.preset:
             try:

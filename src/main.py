@@ -9,6 +9,7 @@ from solvers.trap_solver import TrapSolver
 from utils.integrals import IntegralExpr
 from utils.meta import colorful_error_trace
 from utils.reader import Preset, Reader
+from utils.writer import ResWriter
 
 if __name__ != "__main__":
     exit(0)
@@ -60,6 +61,13 @@ def run() -> None:
         logger.error(e)
         logger.debug(colorful_error_trace(e))
         exit(1)
+
+    if parser.out_stream is not None:
+        logger.info(
+            f"writing result to {parser.out_stream.name} with format={parser.output_format}"
+        )
+        writer = ResWriter(parser.out_stream)
+        writer.write_solution(integral, ans, parser.output_format)
 
     print("================")
     print("result:", ans.value)

@@ -61,7 +61,7 @@ class FunctionExpr:
         }
 
     def f_str(self) -> str:
-        return str(self.f)
+        return str(self.f.expr)
 
     def compute(self, x: Number) -> sp.Float:
         x_sp_float = to_sp_float(x)
