@@ -49,6 +49,7 @@ def run() -> None:
         integral = IntegralExpr(preset=parser.preset)
     except Exception as e:
         logger.error(e)
+        logger.debug(colorful_error_trace(e))
         exit(1)
     logger.debug("solving integral", integral)
 

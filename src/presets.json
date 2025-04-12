@@ -39,5 +39,11 @@
         "f_expr": "(x^2-2*x)/(x-2)",
         "interval_l": 0,
         "interval_r": 4
+    },
+    {
+        "name": "pasha",
+        "f_expr": "1/sqrt(abs(x))",
+        "interval_l": -1,
+        "interval_r": 1
     }
 ]

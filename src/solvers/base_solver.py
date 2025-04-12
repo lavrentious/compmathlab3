@@ -1,3 +1,4 @@
+from typing import List
 import sympy as sp  # type: ignore
 
 from config import EPS, INF_EPS, RUNGE_ERROR_THRESHOLD
@@ -48,6 +49,50 @@ class BaseSolver:
     def solve(
         self, integral_expr: IntegralExpr, interval_count: int, eps: sp.Float = EPS
     ) -> Solution:
+        singularities = integral_expr.get_inf_singularities_in_interval()
+        if len(singularities) == 0:
+            return self._solve(integral_expr, interval_count, eps)
+
+        last_x = integral_expr.interval_l
+        solutions: List[Solution] = []
+        logger.debug("singularities in interval detected")
+        for s in sorted(singularities):
+            logger.debug(f"computing integral on interval [{last_x}, {s}]")
+            solutions.append(
+                self._solve(
+                    IntegralExpr(
+                        interval_l=last_x,
+                        interval_r=s,
+                        fn=integral_expr.fn,
+                    ),
+                    interval_count,
+                    eps,
+                )
+            )
+            last_x = s
+        logger.debug(
+            f"computing integral on interval [{last_x}, {integral_expr.interval_r}]"
+        )
+        solutions.append(
+            self._solve(
+                IntegralExpr(
+                    interval_l=last_x,
+                    interval_r=integral_expr.interval_r,
+                    fn=integral_expr.fn,
+                ),
+                interval_count,
+                eps,
+            )
+        )
+        return Solution(
+            value=sum(s.value for s in solutions),
+            interval_count=sum(s.interval_count for s in solutions),
+            error_rate=max(s.error_rate for s in solutions),
+        )
+
+    def _solve(
+        self, integral_expr: IntegralExpr, interval_count: int, eps: sp.Float = EPS
+    ) -> Solution:
         """
         default implementation
         - checks convergence and raises ValueError if not convergent
@@ -89,11 +134,11 @@ class BaseSolver:
             current = self.compute(integral_expr, interval_count)
             error = abs(current - prev) / (2**self.PRECISION_ORDER - 1)
             logger.debug(f"iteration {i+1}: value={current}, error={error}")
-            if error > RUNGE_ERROR_THRESHOLD:
-                logger.warning(
-                    f"error={error} > RUNGE_ERROR_THRESHOLD={RUNGE_ERROR_THRESHOLD}; assuming divergent "
-                )
-                break
+            # if error > RUNGE_ERROR_THRESHOLD:
+            #     logger.warning(
+            #         f"error={error} > RUNGE_ERROR_THRESHOLD={RUNGE_ERROR_THRESHOLD}; assuming divergent "
+            #     )
+            #     break
             if error < eps:
                 return Solution(
                     current,

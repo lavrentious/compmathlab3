@@ -41,7 +41,10 @@ class FunctionExpr:
         self.fixable_singularities = self._find_fixable_singularities()
 
     def _find_singularities(self) -> Set[sp.Float]:
-        return {to_sp_float(x) for x in sp.singularities(self.f.expr, self.symbol)}
+        return {
+            to_sp_float(x)
+            for x in sp.singularities(self.f.expr, self.symbol, domain=sp.S.Reals)
+        }
 
     def _find_inf_singularities(self) -> Set[sp.Float]:
         return {
